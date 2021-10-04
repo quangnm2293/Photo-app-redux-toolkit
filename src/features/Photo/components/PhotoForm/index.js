@@ -1,23 +1,37 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { PHOTO_CATEGORY_OPTIONS } from 'constants/global';
 import InputField from 'custom-fields/InputField';
 import SelectField from 'custom-fields/SelectField';
-import { addPhoto } from 'features/Photo/photoSlice';
+import { addPhoto, updatePhoto } from 'features/Photo/photoSlice';
 import { FastField, Form, Formik } from 'formik';
-import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import * as Yup from 'yup';
 
 function PhotoForm() {
 	const dispatch = useDispatch();
 	const [photo, setPhoto] = useState('https://picsum.photos/id/237/1920/1080');
 
-	const initialValues = {
-		title: '',
-		category: null,
-	};
+	const photoList = useSelector(state => state.photos);
 
 	const history = useHistory();
+
+	const match = useRouteMatch();
+	const {
+		params: { photoId },
+	} = match;
+
+	const editPhoto = photoList.find(photo => photo.id === Number(photoId));
+
+	const initialValues = {
+		title: photoId ? editPhoto.title : '',
+		category: photoId ? editPhoto.category : null,
+	};
+
+	useEffect(() => {
+		if (photoId) setPhoto(editPhoto.photo);
+	}, []);
 
 	const validateSchema = Yup.object().shape({
 		title: Yup.string().required('This field is required.'),
@@ -31,19 +45,20 @@ function PhotoForm() {
 	};
 
 	const handleSubmit = values => {
-		const valuesSubmit = { ...values, photo };
-		return new Promise(resolve => {
-			setTimeout(() => {
-				dispatch(addPhoto(valuesSubmit));
-				history.push('/photos');
-				resolve();
-			}, 2000);
-		});
+		const id = Math.trunc(Math.random() * 10000);
+		const valuesSubmit = { ...values, photo, id };
+
+		if (photoId) {
+			dispatch(updatePhoto({ ...values, id: Number(photoId), photo }));
+		} else {
+			dispatch(addPhoto(valuesSubmit));
+		}
+		history.push('/photos');
 	};
 
 	return (
 		<Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={validateSchema}>
-			{({ isSubmitting }) => {
+			{() => {
 				//Logic here...
 				return (
 					<Form className='mx-auto max-w-lg p-10 flex flex-col space-y-7'>
@@ -82,8 +97,7 @@ function PhotoForm() {
 
 						<div>
 							<button type='submit' className='p-3 bg-blue-500 text-white rounded-sm'>
-								Add to album &nbsp;
-								{isSubmitting && <span className='animate-pulse text-2xl'>...</span>}
+								{photoId ? 'Update your photo' : 'Add to album'}
 							</button>
 						</div>
 					</Form>

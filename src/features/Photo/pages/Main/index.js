@@ -31,10 +31,12 @@ function MainPage() {
 			</NavLink>
 
 			<div className='grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5'>
-				{photoList.map(({ photo, category }, i) => (
+				{photoList.map(({ photo, category, id, title }, i) => (
 					<PhotoItem
 						key={i}
 						photo={photo}
+						id={id}
+						title={title}
 						category={category}
 						getCategoryNameFromId={getCategoryNameFromId}
 					/>
