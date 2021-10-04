@@ -6,6 +6,8 @@ module.exports = {
 		extend: {
 			outline: {
 				blue: '2px solid #0000ff',
+				white: '2px solid #ffffff',
+				red: '2px solid #ff0000dd',
 			},
 		},
 	},
